@@ -1,0 +1,205 @@
+<div class="d-flex flex-column m-3 m-lg-4 m-md-4">
+  <div class="container border mb-4 shadow-lg">
+    <h2 class="d-flex fst-italic justify-content-center text-center">
+      {{ labels.title }}
+    </h2>
+  </div>
+  <div class="border shadow-lg">
+    <!-- Used mat-table for responsive table  -->
+    <mat-table
+      [dataSource]="usersTableData"
+      multiTemplateDataRows
+      class="mat-elevation-z8"
+    >
+      @for (column of columnsToDisplay; track column) {
+      <ng-container matColumnDef="{{ column }}">
+        <mat-header-cell *matHeaderCellDef>{{
+          column.toUpperCase()
+        }}</mat-header-cell>
+        <mat-cell *matCellDef="let element">
+          {{ element[column] }}
+        </mat-cell>
+      </ng-container>
+      }
+      <ng-container matColumnDef="expand">
+        <mat-header-cell *matHeaderCellDef aria-label="row actions">
+          &nbsp;
+        </mat-header-cell>
+        <mat-cell *matCellDef="let element">
+          <button
+            mat-icon-button
+            aria-label="expand row"
+            (click)="changeAccordionState(element); $event.stopPropagation()"
+          >
+            @if (expandedElement === element) {
+            <mat-icon>keyboard_arrow_up</mat-icon>
+            } @else {
+            <mat-icon>keyboard_arrow_down</mat-icon>
+            }
+          </button>
+        </mat-cell>
+      </ng-container>
+
+      <!-- Expanded Content Column - The detail row is made up of this one column that spans across all columns -->
+      <ng-container matColumnDef="expandedDetail">
+        <mat-cell
+          class="justify-content-center"
+          *matCellDef="let element"
+          [attr.colspan]="columnsToDisplayWithExpand.length"
+        >
+          <div
+            class="example-element-detail"
+            [@detailExpand]="
+              element == expandedElement ? 'expanded' : 'collapsed'
+            "
+          >
+            <div
+              class="example-element-description d-flex w-100 justify-content-center"
+            >
+              <!-- Used CSS grid for displaying form and validation errors -->
+              <div class="container">
+                <form [formGroup]="userDataForm" autocomplete="on">
+                  <div class="row">
+                    <div class="col-sm">
+                      <label for="first-name">{{ labels.first_name }} </label
+                      ><br />
+                      <input
+                        id="first-name"
+                        type="text"
+                        formControlName="firstName"
+                        autocomplete="on"
+                      /><br />
+                      <span
+                        *ngIf="
+                          getFirstName?.invalid &&
+                          (getFirstName?.dirty || getFirstName?.touched)
+                        "
+                        class="line-color"
+                      >
+                        <span *ngIf="getFirstName?.errors?.['required']">
+                          {{ labels.first_name_required }}
+                        </span>
+                      </span>
+                    </div>
+                    <div class="col-sm">
+                      <label for="last-name">{{ labels.last_name }} </label
+                      ><br />
+                      <input
+                        id="last-name"
+                        type="text"
+                        formControlName="lastName"
+                        autocomplete="on"
+                      /><br />
+                      <span
+                        *ngIf="
+                          getLastName?.invalid &&
+                          (getLastName?.dirty || getLastName?.touched)
+                        "
+                        class="line-color"
+                      >
+                        <span *ngIf="getLastName?.errors?.['required']">
+                          {{ labels.last_name_required }}
+                        </span>
+                      </span>
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col-sm">
+                      <label for="phone">{{ labels.phone_no }} </label><br />
+                      <input
+                        id="phone"
+                        type="text"
+                        formControlName="phone"
+                        autocomplete="on"
+                      /><br />
+                      <span
+                        *ngIf="
+                          getPhone?.invalid &&
+                          (getPhone?.dirty || getPhone?.touched)
+                        "
+                        class="line-color"
+                      >
+                        <span *ngIf="getPhone?.errors?.['required']">
+                          {{ labels.phone_no_required }}
+                        </span>
+                        <span *ngIf="getPhone?.errors?.['minlength']">
+                          {{ labels.phone_no_min }}
+                        </span>
+                        <span *ngIf="getPhone?.errors?.['maxlength']">
+                          {{ labels.phone_no_max }}
+                        </span>
+                      </span>
+                    </div>
+                    <div class="col-sm">
+                      <label for="email">{{ labels.email }} </label><br />
+                      <input
+                        id="email"
+                        type="text"
+                        formControlName="email"
+                        autocomplete="on"
+                      /><br />
+                      <span
+                        *ngIf="
+                          getEmail?.invalid &&
+                          (getEmail?.dirty || getEmail?.touched)
+                        "
+                        class="line-color"
+                      >
+                        <span *ngIf="getEmail?.errors?.['required']">
+                          {{ labels.email_required }}
+                        </span>
+                      </span>
+                    </div>
+                  </div>
+                  <div class="row p-4">
+                    <div class="col d-flex justify-content-center">
+                      <button
+                        mat-raised-button
+                        type="button"
+                        color="primary"
+                        [disabled]="userDataForm.invalid || isButtonLoading"
+                        (click)="onSubmit(element)"
+                      >
+                        <span
+                          *ngIf="isButtonLoading; else saveButton"
+                          class="spinner-border spinner-border-sm"
+                          role="status"
+                          aria-hidden="true"
+                        ></span>
+                        <ng-template #saveButton>{{ labels.save }}</ng-template>
+                      </button>
+                    </div>
+                    <div class="col d-flex justify-content-center">
+                      <button
+                        mat-raised-button
+                        color="warn"
+                        type="button"
+                        (click)="onClose(element)"
+                      >
+                        {{ labels.cancel }}
+                      </button>
+                    </div>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </mat-cell>
+      </ng-container>
+
+      <mat-header-row
+        *matHeaderRowDef="columnsToDisplayWithExpand"
+      ></mat-header-row>
+      <mat-row
+        *matRowDef="let element; columns: columnsToDisplayWithExpand"
+        class="example-element-row"
+        [class.example-expanded-row]="expandedElement === element"
+        (click)="changeAccordionState(element)"
+      ></mat-row>
+      <mat-row
+        *matRowDef="let row; columns: ['expandedDetail']"
+        class="example-detail-row"
+      ></mat-row>
+    </mat-table>
+  </div>
+</div>
